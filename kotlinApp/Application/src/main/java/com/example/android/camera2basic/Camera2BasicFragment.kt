@@ -71,7 +71,7 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
         }
 
         override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
-            configureTransform(width, height)
+//            configureTransform(width, height)
         }
 
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
@@ -300,10 +300,11 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
     private fun setUpCameraOutputs(width: Int, height: Int) {
         val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
+            // CameraManger에서 cameraList 가져옴
             for (cameraId in manager.cameraIdList) {
                 val characteristics = manager.getCameraCharacteristics(cameraId)
 
-                // We don't use a front facing camera in this sample.
+                // 후면 카메라 가져옴
                 val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
                 if (cameraDirection != null &&
                         cameraDirection == CameraCharacteristics.LENS_FACING_FRONT) {
@@ -313,9 +314,9 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
                 val map = characteristics.get(
                         CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
 
-                // For still image captures, we use the largest available size.
+                // imageReader의 해상도 및 포맷 설정 (최댓값으로 설정 )
                 val largest = Collections.max(
-                        Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)),
+                        listOf(*map.getOutputSizes(ImageFormat.JPEG)),
                         CompareSizesByArea())
                 imageReader = ImageReader.newInstance(largest.width, largest.height,
                         ImageFormat.JPEG, /*maxImages*/ 2).apply {
@@ -327,7 +328,7 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
                 val displayRotation = activity.windowManager.defaultDisplay.rotation
 
                 sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
-                val swappedDimensions = areDimensionsSwapped(displayRotation)
+                val swappedDimensions = areDimensionsSwapped(displayRotation) // 이미지 방향
 
                 val displaySize = Point()
                 activity.windowManager.defaultDisplay.getSize(displaySize)
@@ -342,6 +343,7 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
                 // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
                 // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
                 // garbage capture data.
+                // 프리뷰 사이즈 선택
                 previewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture::class.java),
                         rotatedPreviewWidth, rotatedPreviewHeight,
                         maxPreviewWidth, maxPreviewHeight,
@@ -354,7 +356,7 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
 //                    textureView.setAspectRatio(previewSize.height, previewSize.width)
 //                }
 
-                // Check if the flash is supported.
+                // 플래시 지원 여부
                 flashSupported =
                         characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
 
@@ -404,8 +406,10 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
             requestCameraPermission()
             return
         }
+        // 카메라 설정
         setUpCameraOutputs(width, height)
-        configureTransform(width, height)
+        // 화면 회전 설정
+//        configureTransform(width, height)
         val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
             // Wait for camera to open - 2.5 seconds is sufficient
@@ -462,9 +466,7 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
         }
     }
 
-    /**
-     * Creates a new [CameraCaptureSession] for camera preview.
-     */
+    // 카메라 preview에 대한 CameraCaptureSession을 만듦
     private fun createCameraPreviewSession() {
         try {
             val texture = textureView.surfaceTexture
@@ -481,7 +483,7 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
             )
             previewRequestBuilder.addTarget(surface)
 
-            // Here, we create a CameraCaptureSession for camera preview.
+            // CameraCaptureSession 생성
             cameraDevice?.createCaptureSession(Arrays.asList(surface, imageReader?.surface),
                     object : CameraCaptureSession.StateCallback() {
 
@@ -500,6 +502,7 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
 
                                 // Finally, we start displaying the camera preview.
                                 previewRequest = previewRequestBuilder.build()
+                                // 반복적으로 이미지 버퍼 얻음
                                 captureSession?.setRepeatingRequest(previewRequest,
                                         captureCallback, backgroundHandler)
                             } catch (e: CameraAccessException) {
@@ -526,30 +529,30 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
      * @param viewWidth  The width of `textureView`
      * @param viewHeight The height of `textureView`
      */
-    private fun configureTransform(viewWidth: Int, viewHeight: Int) {
-        activity ?: return
-        val rotation = activity.windowManager.defaultDisplay.rotation
-        val matrix = Matrix()
-        val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat())
-        val bufferRect = RectF(0f, 0f, previewSize.height.toFloat(), previewSize.width.toFloat())
-        val centerX = viewRect.centerX()
-        val centerY = viewRect.centerY()
-
-        if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
-            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
-            val scale = Math.max(
-                    viewHeight.toFloat() / previewSize.height,
-                    viewWidth.toFloat() / previewSize.width)
-            with(matrix) {
-                setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
-                postScale(scale, scale, centerX, centerY)
-                postRotate((90 * (rotation - 2)).toFloat(), centerX, centerY)
-            }
-        } else if (Surface.ROTATION_180 == rotation) {
-            matrix.postRotate(180f, centerX, centerY)
-        }
-        textureView.setTransform(matrix)
-    }
+//    private fun configureTransform(viewWidth: Int, viewHeight: Int) {
+//        activity ?: return
+//        val rotation = activity.windowManager.defaultDisplay.rotation
+//        val matrix = Matrix()
+//        val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat())
+//        val bufferRect = RectF(0f, 0f, previewSize.height.toFloat(), previewSize.width.toFloat())
+//        val centerX = viewRect.centerX()
+//        val centerY = viewRect.centerY()
+//
+//        if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
+//            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
+//            val scale = Math.max(
+//                    viewHeight.toFloat() / previewSize.height,
+//                    viewWidth.toFloat() / previewSize.width)
+//            with(matrix) {
+//                setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
+//                postScale(scale, scale, centerX, centerY)
+//                postRotate((90 * (rotation - 2)).toFloat(), centerX, centerY)
+//            }
+//        } else if (Surface.ROTATION_180 == rotation) {
+//            matrix.postRotate(180f, centerX, centerY)
+//        }
+//        textureView.setTransform(matrix)
+//    }
 
     /**
      * Lock the focus as the first step for a still image capture.
