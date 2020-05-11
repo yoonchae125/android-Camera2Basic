@@ -375,13 +375,6 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
 
     }
 
-    /**
-     * Determines if the dimensions are swapped given the phone's current rotation.
-     *
-     * @param displayRotation The current rotation of the display
-     *
-     * @return true if the dimensions are swapped, false otherwise.
-     */
     private fun areDimensionsSwapped(displayRotation: Int): Boolean {
         var swappedDimensions = false
         when (displayRotation) {
@@ -467,7 +460,6 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
         } catch (e: InterruptedException) {
             Log.e(TAG, e.toString())
         }
-
     }
 
     /**
