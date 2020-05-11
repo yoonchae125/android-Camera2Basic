@@ -80,34 +80,18 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
 
     }
 
-    /**
-     * ID of the current [CameraDevice].
-     */
+
     private lateinit var cameraId: String
 
-    /**
-     * An [AutoFitTextureView] for camera preview.
-     */
-    private lateinit var textureView: AutoFitTextureView
+    private lateinit var textureView: TextureView
 
-    /**
-     * A [CameraCaptureSession] for camera preview.
-     */
     private var captureSession: CameraCaptureSession? = null
 
-    /**
-     * A reference to the opened [CameraDevice].
-     */
     private var cameraDevice: CameraDevice? = null
 
-    /**
-     * The [android.util.Size] of camera preview.
-     */
+
     private lateinit var previewSize: Size
 
-    /**
-     * [CameraDevice.StateCallback] is called when [CameraDevice] changes its state.
-     */
     private val stateCallback = object : CameraDevice.StateCallback() {
 
         override fun onOpened(cameraDevice: CameraDevice) {
@@ -364,11 +348,11 @@ class Camera2BasicFragment : Fragment(), View.OnClickListener,
                         largest)
 
                 // We fit the aspect ratio of TextureView to the size of preview we picked.
-                if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    textureView.setAspectRatio(previewSize.width, previewSize.height)
-                } else {
-                    textureView.setAspectRatio(previewSize.height, previewSize.width)
-                }
+//                if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//                    textureView.setAspectRatio(previewSize.width, previewSize.height)
+//                } else {
+//                    textureView.setAspectRatio(previewSize.height, previewSize.width)
+//                }
 
                 // Check if the flash is supported.
                 flashSupported =
